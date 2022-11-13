@@ -1,5 +1,6 @@
 import '../styles/globals.css'
 import { MoralisProvider } from 'react-moralis';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function MyApp({ Component, pageProps }) {
   console.log(`${process.env.NEXT_PUBLIC_MORALIS_APPID}`);
