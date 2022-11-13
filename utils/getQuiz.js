@@ -6,9 +6,9 @@ const { parseJSON } = require('./jsonParser');
 const getQuiz = async () => {
     try {
         await Moralis.start({
-            appId: process.env.MORALIS_APPID,
-            serverUrl: process.env.MORALIS_SERVERURL,
-            masterKey: process.env.MORALIS_MASTERKEY,
+            appId: process.env.NEXT_PUBLIC_MORALIS_APPID,
+            serverUrl: process.env.NEXT_PUBLIC_MORALIS_SERVERURL,
+            masterKey: process.env.NEXT_PUBLIC_MORALIS_MASTERKEY,
         });
 
         const QuizData = new Moralis.Query('RealmHunterQuizBot');
@@ -37,7 +37,6 @@ const getQuiz = async () => {
             questionDatas.push(questionData);
         });
         
-        console.log(questionDatas);
         return questionDatas;
     } catch (err) {
         throw err;

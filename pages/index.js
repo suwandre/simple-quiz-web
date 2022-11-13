@@ -5,6 +5,7 @@ import { useMoralis } from 'react-moralis'
 import divWithClassName from 'react-bootstrap/divWithClassName';
 import Button from 'react-bootstrap/Button';
 import styled from 'styled-components';
+import { CenteredDiv } from '../components/Div/CustomDivs';
 
 export default function Home() {
   const { authenticate, isAuthenticated, user, logout } = useMoralis();
@@ -34,9 +35,3 @@ export default function Home() {
     )
   }
 }
-
-const CenteredDiv = styled.div`
-  display: flex;
-  align-items: center;
-  flex-flow: column nowrap;
-`;
