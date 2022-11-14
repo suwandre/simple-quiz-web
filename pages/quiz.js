@@ -142,29 +142,39 @@ const Quiz = ({ quizDatas }) => {
         setTotalCorrectChoices(prevTotalCorrectChoices => prevTotalCorrectChoices + quizDatas[questionId - 1].correctAnswers.length);
     }
 
-    const finalizeQuiz = () => setQuizEnded(true);
+    const finalizeQuiz = () => {
+        // TO DO: SEND SCORE TO MORALIS.
+        finalizeCurrentQuestion(); 
+        setQuizEnded(true);
+    }
 
     const CurrentQuestion = () => {
         if (!quizEnded) {
             return (
-                <div>
-                    <h2>{questionId}. {quizDatas[questionId-1].question}</h2>
-                    <Form>
-                        <h5>Duration: {quizDatas[questionId-1].duration} seconds</h5>
-                        <h5>Points obtainable: {quizDatas[questionId-1].minimumPoints} - {quizDatas[questionId-1].maximumPoints}</h5>
-                        {timerSeconds > 0 ? <h5>Time left: {timerSeconds} seconds</h5> : questionId < quizDatas.length ? nextQuestion() : <h5>Time&apos`s up</h5>}
-                        {quizDatas[questionId - 1].answers.map((answer) => (
-                            <div key={answer} className='mb-3'>
-                                <Form.Check type='checkbox' 
-                                    id={answer} 
-                                    label={answer} 
-                                    onChange={(e) => handleCheckboxChange(e)}
-                                    checked={temporaryChosenAnswers.lastIndexOf(answer) >= 0 ? true : false}
-                                />
+                <>
+                    <div className='px-5 mb-4'>
+                        <h4>{questionId}. {quizDatas[questionId-1].question}</h4>
+                    </div>
+                        <Form>
+                            <div className='d-flex justify-content-center align-items-center flex-column'>
+                                <h6>Duration: {quizDatas[questionId-1].duration} seconds</h6>
+                                <h6>Points obtainable: {quizDatas[questionId-1].minimumPoints} - {quizDatas[questionId-1].maximumPoints}</h6>
+                                {timerSeconds > 0 ? <h6>Time left: {timerSeconds} seconds</h6> : questionId < quizDatas.length ? nextQuestion() : <h5>Time&apos`s up</h5>}
                             </div>
-                        ))}
-                    </Form>
-                </div>
+                            <div className='mt-3'>
+                                {quizDatas[questionId - 1].answers.map((answer) => (
+                                    <div key={answer} className='mb-3'>
+                                        <Form.Check type='checkbox' 
+                                            id={answer} 
+                                            label={answer} 
+                                            onChange={(e) => handleCheckboxChange(e)}
+                                            checked={temporaryChosenAnswers.lastIndexOf(answer) >= 0 ? true : false}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </Form>
+                </>
             )
         } else {
             return (
@@ -177,11 +187,11 @@ const Quiz = ({ quizDatas }) => {
 
     const CurrentStatistics = () => {
         return (
-            <div>
+            <>
                 <h2>Current statistics</h2>
                 <p>You currently have {points}/{totalPoints} points.</p>
                 <p>You have chosen {correctChoices}/{correctChoices + wrongChoices} correct choices.</p>
-            </div>
+            </>
         )
     }
 
@@ -211,7 +221,7 @@ const Quiz = ({ quizDatas }) => {
             )
         } else {
             return (
-                <div>
+                <CenteredDiv>
                     <CurrentQuestion />
                     {!removeButton 
                         ? questionId !== quizDatas.length 
@@ -220,7 +230,7 @@ const Quiz = ({ quizDatas }) => {
                         : <h2>Thanks for playing!</h2>
                     }
                     {!quizEnded ? <CurrentStatistics /> : <FinalStatistics />}
-                </div>
+                </CenteredDiv>
             )
         }
     }
