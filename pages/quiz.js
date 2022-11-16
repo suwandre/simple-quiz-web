@@ -233,7 +233,9 @@ const Quiz = ({ quizDatas }) => {
             return (
                 <CenteredDiv>
                     <h2>Quiz Ended</h2>
-                    <h2>Thanks for playing!</h2>
+                    <h4>Thanks for playing!</h4>
+                    <div className='mt-3'></div>
+                    {!quizEnded ? <></> : <Button variant='dark' onClick={() => router.replace('/')}>Return to start page</Button>}
                 </CenteredDiv>
             )
         }
