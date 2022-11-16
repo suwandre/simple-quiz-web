@@ -3,7 +3,6 @@ import Button from "react-bootstrap/Button";
 import { useMoralis } from "react-moralis";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import { Moralis } from "moralis-v1";
 
 const Start = () => {
     const [userStats, setUserStats] = useState({});
@@ -13,33 +12,28 @@ const Start = () => {
     if (!isAuthenticated || !user) () => router.replace('/');
 
     const getUserStats = async () => {
-      await Moralis.start({
-        appId: process.env.NEXT_PUBLIC_MORALIS_APPID,
-        serverUrl: process.env.NEXT_PUBLIC_MORALIS_SERVERURL,
-        masterKey: process.env.NEXT_PUBLIC_MORALIS_MASTERKEY,
-      });
-
-      const AddressStats = new Moralis.Query('RHQuizLeaderboard');
-      AddressStats.equalTo('address', user && user.attributes.ethAddress);
-
-      const result = await AddressStats.first({useMasterKey: true});
-
-      if (!result) {
-        return {
-          quizzesPlayed: 0,
-          allQuizStats: 0
-        }
+      try {
+        const rawResponse = await fetch(`https://nbc-webapp-api-v2.herokuapp.com/quiz/getUserStats/${user && user.attributes.ethAddress}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+        });
+        const response = await rawResponse.json();
+        setUserStats({quizzesPlayed: response['quizzesPlayed'], allQuizStats: response['allQuizStats']});
+      } catch (err) {
+        throw err;
       }
-
-      const parsedResult = JSON.parse(JSON.stringify(result));
-      const quizzesPlayed = parsedResult['quizzesPlayed'] ? parsedResult['quizzesPlayed'] : 0;
-      const allQuizStats = parsedResult['allQuizStats'] ? parsedResult['allQuizStats'] : [];
-
-      setUserStats({quizzesPlayed: quizzesPlayed, allQuizStats: allQuizStats});
     }
 
     const getBestGame = async () => {
-      const game = userStats['allQuizStats'] && userStats['allQuizStats'].length > 0 ? userStats['allQuizStats'].reduce((prev, current) => (prev['score'] > current['score']) ? prev : current) : {};
+      const game = userStats['allQuizStats'] && userStats['allQuizStats'].length > 0 
+      ? userStats['allQuizStats'].reduce((prev, current) => (prev['score'] > current['score']) 
+          ? prev 
+          : current
+        )
+        : {};
       setBestGame(game);
     }
 
@@ -70,20 +64,5 @@ const Start = () => {
         </CenteredDiv>
     )
 }
-
-// const GetUserStats = ({address}) => {
-//   const [ stats, setStats ] = useState(null);
-//   const userStats = async () => {
-//     setStats('hello!');
-//   }
-
-//   return (
-//     <h2>{stats} and {address}</h2>
-//   )
-// }
-
-// export const getServerSideProps = async () => {
-//   const stats = 
-// }
 
 export default Start;
