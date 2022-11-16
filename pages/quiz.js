@@ -146,51 +146,33 @@ const Quiz = ({ quizDatas }) => {
     }
 
     const uploadScoreToMoralis = async () => {
-        await Moralis.start({
-            appId: process.env.NEXT_PUBLIC_MORALIS_APPID,
-            serverUrl: process.env.NEXT_PUBLIC_MORALIS_SERVERURL,
-            masterKey: process.env.NEXT_PUBLIC_MORALIS_MASTERKEY,
-        });
-
-        const AddressStats = new Moralis.Query('RHQuizLeaderboard');
-        AddressStats.equalTo('address', user && user.attributes.ethAddress);
-
-        // check if the stats for this address is in the DB
-        const addressStats = await AddressStats.first({ useMasterKey: true });
-
-        if (addressStats === undefined || addressStats === null) {
-            const Stats = Moralis.Object.extend('RHQuizLeaderboard');
-            const stats = new Stats();
-            stats.set('address', user && user.attributes.ethAddress);
-            stats.set('quizzesPlayed', 1);
-            stats.set('allQuizStats', [{
-                correctChoices: correctChoices + "/" + totalCorrectChoices,
-                wrongChoices: wrongChoices,
-                points: points + "/" + totalPoints
-            }]);
-
-            await stats.save(null, { useMasterKey: true });
-        } else {
-            const parsedAddressStats = JSON.parse(JSON.stringify(addressStats));
-
-            const currentQuizzesPlayed = parseInt(parsedAddressStats['quizzesPlayed']);
-            addressStats.set('quizzesPlayed', currentQuizzesPlayed + 1);
-            let currentAllQuizStats = parsedAddressStats['allQuizStats'];
-            currentAllQuizStats.push({
-                correctChoices: correctChoices + "/" + totalCorrectChoices,
-                wrongChoices: wrongChoices,
-                points: points + "/" + totalPoints
+        try {
+            // let responseClone;
+            const rawResponse = await fetch(`https://nbc-webapp-api-v2.herokuapp.com/quiz/uploadScore`, {
+                method: 'POST',
+                headers: {
+                    'Accept': '*/*',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    'address': user && user.attributes.ethAddress,
+                    'correctChoices': correctChoices,
+                    'totalCorrectChoices': totalCorrectChoices,
+                    'wrongChoices': wrongChoices,
+                    'points': points,
+                    'totalPoints': totalPoints
+                })
             });
-            addressStats.set('allQuizStats', currentAllQuizStats);
 
-            await addressStats.save(null, { useMasterKey: true });
+            const response = await rawResponse.json();
+            console.log(response);
+            setUploadedToMoralis(true);
+        } catch (err) {
+            throw err;
         }
-
-        setUploadedToMoralis(true);
     }
 
     const finalizeQuiz = () => {
-        // TO DO: SEND SCORE TO MORALIS.
         finalizeCurrentQuestion(); 
         setQuizEnded(true);
     }
