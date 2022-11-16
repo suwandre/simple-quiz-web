@@ -1,10 +1,12 @@
 import { getQuiz } from "../utils/getQuiz";
+// import { getUserStats } from "../utils/quizStats";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { useRouter } from "next/router";
 import { useMoralis } from "react-moralis";
 import { useState, useEffect } from "react";
 import { CenteredDiv } from "../components/Div/CustomDivs";
+import { Moralis } from "moralis-v1";
 
 const Quiz = ({ quizDatas }) => {
     const router = useRouter();
@@ -33,6 +35,7 @@ const Quiz = ({ quizDatas }) => {
     const [totalCorrectChoices, setTotalCorrectChoices] = useState(0);
     const [quizEnded, setQuizEnded] = useState(false);
     const [removeButton, setRemoveButton] = useState(false);
+    const [uploadedToMoralis, setUploadedToMoralis] = useState(false);
 
     const startQuiz = () => {
         setClickedStart(true);
@@ -142,11 +145,61 @@ const Quiz = ({ quizDatas }) => {
         setTotalCorrectChoices(prevTotalCorrectChoices => prevTotalCorrectChoices + quizDatas[questionId - 1].correctAnswers.length);
     }
 
+    const uploadScoreToMoralis = async () => {
+        await Moralis.start({
+            appId: process.env.NEXT_PUBLIC_MORALIS_APPID,
+            serverUrl: process.env.NEXT_PUBLIC_MORALIS_SERVERURL,
+            masterKey: process.env.NEXT_PUBLIC_MORALIS_MASTERKEY,
+        });
+
+        const AddressStats = new Moralis.Query('RHQuizLeaderboard');
+        AddressStats.equalTo('address', user && user.attributes.ethAddress);
+
+        // check if the stats for this address is in the DB
+        const addressStats = await AddressStats.first({ useMasterKey: true });
+
+        if (addressStats === undefined || addressStats === null) {
+            const Stats = Moralis.Object.extend('RHQuizLeaderboard');
+            const stats = new Stats();
+            stats.set('address', user && user.attributes.ethAddress);
+            stats.set('quizzesPlayed', 1);
+            stats.set('allQuizStats', [{
+                correctChoices: correctChoices + "/" + totalCorrectChoices,
+                wrongChoices: wrongChoices,
+                points: points + "/" + totalPoints
+            }]);
+
+            await stats.save(null, { useMasterKey: true });
+        } else {
+            const parsedAddressStats = JSON.parse(JSON.stringify(addressStats));
+
+            const currentQuizzesPlayed = parseInt(parsedAddressStats['quizzesPlayed']);
+            addressStats.set('quizzesPlayed', currentQuizzesPlayed + 1);
+            let currentAllQuizStats = parsedAddressStats['allQuizStats'];
+            currentAllQuizStats.push({
+                correctChoices: correctChoices + "/" + totalCorrectChoices,
+                wrongChoices: wrongChoices,
+                points: points + "/" + totalPoints
+            });
+            addressStats.set('allQuizStats', currentAllQuizStats);
+
+            await addressStats.save(null, { useMasterKey: true });
+        }
+
+        setUploadedToMoralis(true);
+    }
+
     const finalizeQuiz = () => {
         // TO DO: SEND SCORE TO MORALIS.
         finalizeCurrentQuestion(); 
         setQuizEnded(true);
     }
+
+    useEffect(() => {
+        if (quizEnded && !uploadedToMoralis) {
+            uploadScoreToMoralis();
+        }
+    }, [quizEnded]);
 
     const CurrentQuestion = () => {
         if (!quizEnded) {
@@ -178,9 +231,10 @@ const Quiz = ({ quizDatas }) => {
             )
         } else {
             return (
-                <div>
+                <CenteredDiv>
                     <h2>Quiz Ended</h2>
-                </div>
+                    <h2>Thanks for playing!</h2>
+                </CenteredDiv>
             )
         }
     }
@@ -197,11 +251,11 @@ const Quiz = ({ quizDatas }) => {
 
     const FinalStatistics = () => {
         return (
-            <div>
+            <CenteredDiv>
                 <h2>Your final statistics</h2>
                 <p>You have {points}/{totalPoints} points.</p>
                 <p>You have chosen {correctChoices}/{correctChoices + wrongChoices} correct choices.</p>
-            </div>
+            </CenteredDiv>
         )
     }
 
@@ -227,7 +281,7 @@ const Quiz = ({ quizDatas }) => {
                         ? questionId !== quizDatas.length 
                             ? <Button variant='dark' onClick={nextQuestion}>Submit answer(s)</Button>
                             : <Button variant='dark' onClick={() => {finalizeQuiz(); setRemoveButton(true);}}>End quiz.</Button> 
-                        : <h2>Thanks for playing!</h2>
+                        : <></>
                     }
                     {!quizEnded ? <CurrentStatistics /> : <FinalStatistics />}
                 </CenteredDiv>

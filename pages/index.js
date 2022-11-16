@@ -9,26 +9,19 @@ import { CenteredDiv } from '../components/Div/CustomDivs';
 import Row from 'react-bootstrap/Row';
 
 export default function Home() {
-  const { authenticate, isAuthenticated, user, logout } = useMoralis();
+  const { authenticate, isAuthenticated, user } = useMoralis();
   const router = useRouter();
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     return (
         <CenteredDiv>
-          <Button variant='dark' onClick={() => authenticate({signingMessage: 'metamask login'})}>Login to your Metamask wallet to start.</Button>
+          <Button variant='dark' onClick={() => {
+            authenticate({signingMessage: 'metamask login'});
+            router.push('/start');
+          }}>Login to your Metamask wallet to start.</Button>
         </CenteredDiv>
     )
   } else {
-    return (
-      <CenteredDiv>
-      <h2>Welcome, {user.attributes.ethAddress}!</h2>
-        <div className='mt-1'>
-          <Button variant='dark' onClick={() => router.push('/quiz')}>Let&apos;s start the quiz!</Button>
-        </div>
-        <div className='mt-1'>
-          <Button variant='dark' onClick={() => logout()}>Logout</Button>
-        </div>
-      </CenteredDiv>
-    )
+    router.push('/start');
   }
 }
