@@ -23,9 +23,10 @@ This web app is built with the following languages, frameworks and tools:
 - [Heroku](https://www.heroku.com) - A cloud platform to host the backend API
 
 ## Access/installation
-The website itself is currently available on Netlify: [Visit website](https://main--rh-simple-quiz-webapp.netlify.app/start)
+The website itself is currently available on Netlify: [Visit website](https://main--rh-simple-quiz-webapp.netlify.app/start). **IMPORTANT**: Please have a Metamask wallet set up to play the quiz.
 
 If you prefer to run a local instance of the web app, please install the following dependencies before continuing:
+- A [Metamask wallet](https://metamask.io) installed into your browser to access the web app.
 - If possible, the latest version of [Node.js](https://nodejs.org/en/), or at least v12.22.0.
 
 Clone the repository via your terminal.
