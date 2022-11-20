@@ -1,6 +1,7 @@
 # Quiz Web App
 ### A simple quiz web app made initially for Realm Hunter's Discord Bot, but _webapp_ -isized.
 
+**NOTE: Please have a Metamask account in order to log in**
 This web app is currently only a very simple version with almost no styling apart from divs and buttons. Styling is currently on the works and a more revamped version will be available in the near future.
 
 ## Features
